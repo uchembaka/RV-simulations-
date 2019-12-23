@@ -1,0 +1,35 @@
+---
+title: "Poisson Random Variable"
+author: 'Uche Mbaka'
+date: "12/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+If $X \sim Po(\lambda) \ and\  X_{i} \sim Ex(\lambda), \ i \epsilon N$, then 
+
+$$P(X = k) = P(X_{1}+...+X_{k} \leq 1 < X_{1}+...+X_{k+1})$$
+Based on this identity, we implement an algorithm to simulate from a $\textbf{Po}(\lambda)$  distribution using simulations from an $Ex(\lambda)$ distribution
+
+  ```{r}
+  poisson <- function(n, lambda){
+    x <- vector(length = n)#vector to hold poisson outcomes
+    for (i in 1:n){
+      sum <- 0
+      count <- 0
+      while(sum <= 1){
+        e <- -log(1-runif(1))/lambda #exponential r.v
+        sum = sum+e
+        if(sum <= 1) count = count + 1
+      }#while()
+      x[i] <- count
+    }#for()
+    return(x)
+  }#poissson()
+  
+  hist(poisson(1000,1),freq=FALSE)
+
+  ```

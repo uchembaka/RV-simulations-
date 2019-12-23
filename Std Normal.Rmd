@@ -1,0 +1,76 @@
+---
+title: "Standard Normal from Laplace distribution"
+author: "Uche Mbaka"
+date: "12/23/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+  The standard double exponential is symmetric exponential distribution, and since we know how to sample from exponential distribution using the inversion method, if we generate $Y \sim exp(1)$ we can generate $U(0,1)$ and sign $Y$, setting $X = |Y|$ if $U \leq 0.5$ and $X = -|y|$ if $U > 0.5$ where $X = \pm|X| \sim N(0,1)$.  
+  
+  $$Target \ distribution \ f(x)= (2\pi )^{\frac{-1}{2}}exp(\frac{-x^{2}}{2})$$
+  $$Envelope function \ h(x)= \frac{1}{2}exp(-|x|)$$
+  
+  we set $w(x) = \frac{f(x)}{h(x)}$ and to minimize the probability of rejection we bound the ratio $\frac{f(x)}{h(x)}$ by the constant $M>0$ (ideally M should be close to 1). We set $g(x) = Mh(x)$. $M \geq Sup_{x}\{\frac{f(x)}{g(x)}\}$
+  
+  $$M = Max(w(x)) = w'(x) = 0$$
+  $$w(x) = \frac{f(x)}{h(x)} = \frac{(2\pi )^{\frac{-1}{2}}exp(\frac{-x^{2}}{2})}{\frac{1}{2}exp(-|x|)}$$
+  
+  $$w(x) = exp(x- \frac{x^{2}}{2})\sqrt{\frac{2}{\pi}}$$
+  
+  The above result was gotten using **Mathematica**
+  
+  $$M = Max(w(x)) = Max(exp(x- \frac{x^{2}}{2})\sqrt{\frac{2}{\pi}})$$
+  
+  $$M = \sqrt{\frac{2e}{\pi}} \ at\  x = 1$$
+  The above result was gotten from **Mathematica** using the Maximize function
+  
+  $$\frac{f(x)}{Mh(x)} = \frac{f(x)}{g(x)} = \frac{exp(x- \frac{x^{2}}{2})\sqrt{\frac{2}{\pi}}}{\sqrt{\frac{2e}{\pi}}}$$
+  
+  $$=exp(-\frac{1}{2}+x+\frac{x^{2}}{2})$$
+  
+  Above result gotten from **Mathematica**
+  
+  $$\frac{f(x)}{g(x)} = exp(-\frac{1}{2}+x+\frac{x^{2}}{2}) = exp(-\frac{(x-1)^{2}}{2})$$
+  
+  The algorithm for generating $X \sim N(0,1)$  
+    1. Generate $Y \sim Exp(1)$ using inversion method i.e ($Y = -log(1-U); \ U\sim U(0,1)$)  
+    2. Generate $U \sim U(0,1)$  
+    3. If $U \leq exp(-\frac{(y-1)^{2}}{2})$, set $|X| = Y$; else go back to 1.
+    4. Generate $U \sim U(0,1)$, set $X = |X|$ if $U \leq 0.5$, else set $X = -|X| \ (U > 0.5)$
+    
+ ```{r}
+    stdNormal <- function(n){
+      X <- vector(length = n)
+      for(i in 1:n){
+        while(TRUE){
+          y <- -log(1-runif(1))#exp(1)
+          u <- runif(1)
+          if(u <= exp(-((y - 1)^2/2))){
+            u2 <- runif(1)
+            if(u2 <= 0.5){#sign Y
+              X[i] <- y 
+              break
+            }else{
+              X[i] <- -y
+              break
+            }#inner if else() 
+          }#outer if()
+        }#while()
+      }#for()
+      return (X)
+    }#stdNormal
+    
+    #Check
+    X <- stdNormal(1000)
+    
+    hist(X, freq = FALSE, main = "Density Plot of X")
+
+    lines(density(X, adjust=2), lwd = 2, col = 2)
+    
+  ```
